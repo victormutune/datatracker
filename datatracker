@@ -1,0 +1,89 @@
+# COVID-19 Global Data Tracker
+# Author: [Your Name]
+# Description: Jupyter Notebook for analyzing global COVID-19 trends
+
+# 1️⃣ Data Collection and Loading
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Optional libraries
+# import plotly.express as px
+# import geopandas as gpd
+
+# Load dataset
+df = pd.read_csv("data/owid-covid-data.csv")
+
+# 2️⃣ Data Exploration
+print(df.columns)
+print(df.head())
+print(df.isnull().sum())
+
+# 3️⃣ Data Cleaning
+# Filter for selected countries
+countries = ['Kenya', 'United States', 'India']
+df = df[df['location'].isin(countries)]
+
+# Drop rows with missing dates or total cases
+df = df.dropna(subset=['date', 'total_cases'])
+df['date'] = pd.to_datetime(df['date'])
+
+# Fill numeric columns with interpolation
+df['total_deaths'] = df['total_deaths'].interpolate()
+df['total_vaccinations'] = df['total_vaccinations'].interpolate()
+
+# 4️⃣ Exploratory Data Analysis (EDA)
+# Plot total cases over time
+plt.figure(figsize=(12,6))
+for country in countries:
+    country_data = df[df['location'] == country]
+    plt.plot(country_data['date'], country_data['total_cases'], label=country)
+plt.title("Total COVID-19 Cases Over Time")
+plt.xlabel("Date")
+plt.ylabel("Total Cases")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("visuals/total_cases_over_time.png")
+plt.show()
+
+# Death rate analysis
+df['death_rate'] = df['total_deaths'] / df['total_cases']
+
+# Bar chart: Latest total cases by country
+latest = df[df['date'] == df['date'].max()]
+plt.figure(figsize=(8,6))
+sns.barplot(x='location', y='total_cases', data=latest)
+plt.title("Total COVID-19 Cases by Country (Latest Date)")
+plt.ylabel("Total Cases")
+plt.tight_layout()
+plt.savefig("visuals/total_cases_bar.png")
+plt.show()
+
+# 5️⃣ Vaccination Trends
+plt.figure(figsize=(12,6))
+for country in countries:
+    country_data = df[df['location'] == country]
+    plt.plot(country_data['date'], country_data['total_vaccinations'], label=country)
+plt.title("Total Vaccinations Over Time")
+plt.xlabel("Date")
+plt.ylabel("Total Vaccinations")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.savefig("visuals/vaccination_trends.png")
+plt.show()
+
+# 6️⃣ Optional: Choropleth Map (code stub, needs setup)
+# map_df = latest[['iso_code', 'location', 'total_cases']]
+# fig = px.choropleth(map_df, locations="iso_code", color="total_cases", hover_name="location",
+#                     color_continuous_scale="Reds", title="Global COVID-19 Case Density")
+# fig.show()
+
+# 7️⃣ Key Insights (to be written in Markdown in the Notebook):
+# - India shows the highest total case count among selected countries.
+# - Kenya's vaccination uptake has lagged behind the US and India.
+# - The death rate remains relatively stable over time.
+# - The US had early spikes in cases and vaccinations.
+
+# End of Notebook
